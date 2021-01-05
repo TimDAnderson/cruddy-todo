@@ -47,10 +47,20 @@ const writeCounter = (count, callback) => {
 
 
 exports.getNextUniqueId = (cb) => {
-  let counter = readCounter(cb);
-  // counter++;
-  // writeCounter(counter, cb);
-  // return counter;
+  readCounter((err, count) => {
+    if (err) {
+      throw 'error, cannot read counter from file';
+    } else {
+      count++;
+    }
+    writeCounter(count, (err, count)=>{
+      if (err) {
+        throw 'error, cannot write counter to file';
+      } else {
+        cb(null, count);
+      }
+    });
+  });
 
 };
 
