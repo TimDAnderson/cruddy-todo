@@ -64,7 +64,7 @@ exports.getNextUniqueId = (cb) => {
 
 };
 
-//run readCounter
+//run  readCounter
 //what happens if there is no counter.txt file
 //need to create one starting at 0
 
