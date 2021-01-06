@@ -12,3 +12,9 @@ fs.writeFile('./datastore/data/test.txt', 'test', (err) => {
   console.log(fs.readdirSync('./datastore/data').length);
 });
 
+
+fs.readdir('./datastore/data', (err, files) => {
+  files.forEach(file => {
+    console.log(file);
+  });
+});

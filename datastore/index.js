@@ -39,10 +39,28 @@ exports.create = (text, callback) => {
 };
 
 exports.readAll = (callback) => {
-  var data = _.map(items, (text, id) => {
-    return { id, text };
+  // var data = _.map(items, (text, id) => {
+  //   return { id, text };
+  // });
+  // console.log('data: ', data)
+  // callback(null, data);
+
+  fs.readdir(exports.dataDir, (err, files) => {
+    if (err) {
+      throw 'error reading contents of directory';
+    }
+    for (var i = 0; i < files.length; i++) {
+      files[i] = {
+        id: files[i].replace('.txt', ''),
+        text: files[i].replace('.txt', '')
+      };
+    }
+    callback(err, files);
+
+
   });
-  callback(null, data);
+
+  
 };
 
 exports.readOne = (id, callback) => {
