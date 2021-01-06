@@ -56,21 +56,37 @@ exports.readAll = (callback) => {
       };
     }
     callback(err, files);
-
-
   });
-
-  
 };
 
 exports.readOne = (id, callback) => {
-  var text = items[id];
-  if (!text) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback(null, { id, text });
-  }
+  // var text = items[id];
+  // if (!text) {
+  //   callback(new Error(`No item with id: ${id}`));
+  // } else {
+  //   callback(null, { id, text });
+  // }
+
+  //read file at exports.dataDir/id.txt
+  //pass text file contents into the callback
+  fs.readFile(`${exports.dataDir}/${id}.txt`, {encoding: 'utf-8'}, (err, data)=>{
+    if (err) {
+      //throw 'could not read file';
+    }
+    var todoObj = {
+      id,
+      text: data
+    };
+    callback(err, todoObj);
+
+  });
+
+
+
 };
+
+
+
 
 exports.update = (id, text, callback) => {
   var item = items[id];
