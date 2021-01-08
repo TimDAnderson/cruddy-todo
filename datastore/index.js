@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const _ = require('underscore');
 const counter = require('./counter');
+var Promise = require('bluebird');
 
 var items = {};
 
@@ -9,21 +10,14 @@ var items = {};
 
 exports.create = (text, callback) => {
   var todo = {};
-  // var id = counter.getNextUniqueId();
-  // items[id] = text;
-  // callback(null, { id, text });
 
-  //chain together a few callbacks
-  //getNextUniqueID -> 
-  counter.getNextUniqueId((err, count)=>{
+  counter.getNextUniqueId((err, count) => {
     if (err) {
       throw 'could not get id';
-    } 
+    }
     todo.id = count;
-    //write count.txt file with content text
-    //writefile takes in (filepath, fileContent, cb)
 
-    fs.writeFile(`${exports.dataDir}/${count}.txt`, text, (err)=>{
+    fs.writeFile(`${exports.dataDir}/${count}.txt`, text, (err) => {
       if (err) {
         throw 'there was an error writing todo';
       } else {
@@ -32,44 +26,42 @@ exports.create = (text, callback) => {
       todo.text = text;
       callback(err, todo);
     });
-    // in this call back run the original callback?
 
   });
 
 };
 
 exports.readAll = (callback) => {
-  // var data = _.map(items, (text, id) => {
-  //   return { id, text };
-  // });
-  // console.log('data: ', data)
-  // callback(null, data);
 
   fs.readdir(exports.dataDir, (err, files) => {
     if (err) {
       throw 'error reading contents of directory';
     }
+
+    var promiseArray = [];
     for (var i = 0; i < files.length; i++) {
-      files[i] = {
-        id: files[i].replace('.txt', ''),
-        text: files[i].replace('.txt', '')
-      };
+      promiseArray.push(new Promise((resolve, reject) => {
+        let idName = files[i].replace('.txt', '');
+        fs.readFile(`${exports.dataDir}/${files[i]}`, { encoding: 'utf-8' }, (err, data) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve({ id: idName, text: data });
+          }
+        });
+      }));
     }
-    callback(err, files);
+
+    Promise.all(promiseArray).then((todos) => {
+      callback(null, todos);
+    });
+
   });
 };
 
 exports.readOne = (id, callback) => {
-  // var text = items[id];
-  // if (!text) {
-  //   callback(new Error(`No item with id: ${id}`));
-  // } else {
-  //   callback(null, { id, text });
-  // }
 
-  //read file at exports.dataDir/id.txt
-  //pass text file contents into the callback
-  fs.readFile(`${exports.dataDir}/${id}.txt`, {encoding: 'utf-8'}, (err, data)=>{
+  fs.readFile(`${exports.dataDir}/${id}.txt`, { encoding: 'utf-8' }, (err, data) => {
     if (err) {
       //throw 'could not read file';
     }
@@ -81,34 +73,24 @@ exports.readOne = (id, callback) => {
 
   });
 
-
-
 };
 
 
 
 
 exports.update = (id, text, callback) => {
-  // var item = items[id];
-  // if (!item) {
-  //   callback(new Error(`No item with id: ${id}`));
-  // } else {
-  //   items[id] = text;
-  //   callback(null, { id, text });
-  // }
 
-  fs.readFile(`${exports.dataDir}/${id}.txt`, {encoding: 'utf-8'}, (err, data)=>{
+  fs.readFile(`${exports.dataDir}/${id}.txt`, { encoding: 'utf-8' }, (err, data) => {
     if (err) {
       console.log('file does not exist');
       callback(err);
     } else {
-
-      fs.writeFile(`${exports.dataDir}/${id}.txt`, text, (err)=>{
+      fs.writeFile(`${exports.dataDir}/${id}.txt`, text, (err) => {
         if (err) {
           throw 'could not write to file';
         }
+
         callback();
-    
       });
     }
   });
@@ -116,14 +98,6 @@ exports.update = (id, text, callback) => {
 };
 
 exports.delete = (id, callback) => {
-  // var item = items[id];
-  // delete items[id];
-  // if (!item) {
-  //   // report an error if item not found
-  //   callback(new Error(`No item with id: ${id}`));
-  // } else {
-  //   callback();
-  // }
 
   fs.readFile(`${exports.dataDir}/${id}.txt`, 'utf-8', (err, data) => {
     console.log(`help display data for utf8: ${data}`);
@@ -139,12 +113,6 @@ exports.delete = (id, callback) => {
       });
     }
   });
-
-
-
-
-
-  
 };
 
 // Config+Initialization code -- DO NOT MODIFY /////////////////////////////////
